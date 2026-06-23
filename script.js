@@ -1,5 +1,5 @@
 // ===== НАСТРОЙКА =====
-const API_URL = 'https://script.google.com/macros/s/AKfycbylX6rL-lLfwwH7cd7XPxRXg7apjyMW2TjqIRwqgJcZ_IEDwBPlC-OU5ygrJKV3Hg2pqA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw4UYB19CjtRVtG14uz8EI1PhypgvdlKGFlQ6mXEIBj4_-TVk0GWAlYjlEVRmVNJ-7h/exec';
 const CACHE_KEY = 'scheduleCache';
 const CACHE_TTL = 5 * 60 * 1000;
 
