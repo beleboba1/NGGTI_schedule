@@ -12,12 +12,13 @@
         <p class="subtitle">на 2025 - 2026 учебный год</p>
     </header>
 
-    <!-- Выбор типа расписания (листа) -->
-    <div class="type-selector">
-        <button class="type-btn active" data-sheet="Расписание">📚 Основное</button>
-        <button class="type-btn" data-sheet="Практика">🛠 Практика</button>
-        <button class="type-btn" data-sheet="Зачеты">📝 Зачеты</button>
-        <button class="type-btn" data-sheet="Экзамены">📖 Экзамены</button>
+    <!-- Блок фильтра по типу (Все, Основное, Практика, Зачет, Экзамен) -->
+    <div class="type-filter">
+        <button class="type-filter-btn active" data-type="Все">📋 Все</button>
+        <button class="type-filter-btn" data-type="Основное">📚 Основное</button>
+        <button class="type-filter-btn" data-type="Практика">🛠 Практика</button>
+        <button class="type-filter-btn" data-type="Зачет">📝 Зачет</button>
+        <button class="type-filter-btn" data-type="Экзамен">📖 Экзамен</button>
     </div>
 
     <nav class="faculty-nav">
@@ -26,14 +27,6 @@
         <button class="faculty-btn" data-faculty="ГФ">ГФ</button>
         <button class="faculty-btn" data-faculty="ФТСТ">ФТСТ</button>
     </nav>
-
-    <div class="type-filter">
-    <button class="type-filter-btn active" data-type="Все">📋 Все</button>
-    <button class="type-filter-btn" data-type="Основное">📚 Основное</button>
-    <button class="type-filter-btn" data-type="Практика">🛠 Практика</button>
-    <button class="type-filter-btn" data-type="Зачет">📝 Зачет</button>
-    <button class="type-filter-btn" data-type="Экзамен">📖 Экзамен</button>
-    </div>
 
     <div class="controls">
         <input type="text" id="searchInput" placeholder="Поиск по группе или преподавателю...">

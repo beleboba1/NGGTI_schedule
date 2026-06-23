@@ -8,12 +8,12 @@ let facultyFilter = 'all';
 let searchQuery = '';
 let selectedGroup = '';
 let currentWeek = 1;
-let currentType = 'Все'; // 'Все', 'Основное', 'Практика', 'Зачет', 'Экзамен'
+let currentType = 'Все';
 
 const DAYS = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
 const LESSON_TIMES = ['08:00', '09:40', '11:20', '13:20', '15:00', '16:40', '18:20', '20:00'];
 
-// ===== КЕШИРОВАНИЕ =====
+// ===== КЕШ =====
 function getCachedData() {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -28,7 +28,7 @@ function setCachedData(data) {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
 }
 
-// ===== ЗАГРУЗКА ДАННЫХ =====
+// ===== ЗАГРУЗКА =====
 async function loadData(force = false) {
     if (!force) {
         const cached = getCachedData();
@@ -52,7 +52,6 @@ async function loadData(force = false) {
     }
 }
 
-// ===== ИНДИКАТОР =====
 function showLoading(show) {
     const el = document.getElementById('loading');
     if (el) el.style.display = show ? 'block' : 'none';
@@ -61,11 +60,9 @@ function showLoading(show) {
 // ===== ФИЛЬТРАЦИЯ =====
 function filterData(data) {
     let filtered = data;
-    // Фильтр по факультету
     if (facultyFilter !== 'all') {
         filtered = filtered.filter(row => row['Факультет'] === facultyFilter);
     }
-    // Поиск
     if (searchQuery.trim() !== '') {
         const q = searchQuery.trim().toLowerCase();
         filtered = filtered.filter(row =>
@@ -73,20 +70,17 @@ function filterData(data) {
             row['Преподаватель'].toLowerCase().includes(q)
         );
     }
-    // Группа
     if (selectedGroup !== '') {
         filtered = filtered.filter(row => row['Группа'] === selectedGroup);
     }
-    // Неделя
     filtered = filtered.filter(row => String(row['Неделя']) === String(currentWeek));
-    // Тип (если не 'Все')
     if (currentType !== 'Все') {
         filtered = filtered.filter(row => row['Тип'] === currentType);
     }
     return filtered;
 }
 
-// ===== ПОСТРОЕНИЕ ТАБЛИЦЫ =====
+// ===== ОТРИСОВКА ТАБЛИЦЫ =====
 function renderTable(filtered) {
     const tbody = document.getElementById('schedule-body');
     const noData = document.getElementById('no-data');
@@ -126,8 +120,17 @@ function renderTable(filtered) {
                     const teacher = cell['Преподаватель'] || '';
                     const room = cell['Аудитория'] || '';
                     const building = cell['Здание'] || '';
-                    const type = cell['Вид_занятия'] || '';
-                    const typeIcon = type === 'лекция' ? '📘' : type === 'практика' ? '📗' : type === 'лабораторная' ? '📙' : '';
+                    let type = cell['Вид_занятия'] || '';
+                    // Заменяем "практическое занятие" на "ПЗ" для краткости
+                    if (type === 'практическое занятие') type = 'ПЗ';
+                    // Иконки для видов
+                    let typeIcon = '';
+                    if (type === 'лекция') typeIcon = '📘';
+                    else if (type === 'ПЗ') typeIcon = '📗';
+                    else if (type === 'лабораторная работа') typeIcon = '📙';
+                    else if (type === 'экзамен') typeIcon = '📖';
+                    else if (type === 'зачет') typeIcon = '📝';
+                    else if (type === 'практика') typeIcon = '🛠';
                     return `<div class="lesson-cell">
                                 <span class="subject">${subject}</span>
                                 <span class="teacher">${teacher}</span>
@@ -173,8 +176,15 @@ function renderMobile(filtered) {
         const teacher = row['Преподаватель'] || '';
         const room = row['Аудитория'] || '';
         const building = row['Здание'] || '';
-        const type = row['Вид_занятия'] || '';
-        const typeIcon = type === 'лекция' ? '📘' : type === 'практика' ? '📗' : type === 'лабораторная' ? '📙' : '';
+        let type = row['Вид_занятия'] || '';
+        if (type === 'практическое занятие') type = 'ПЗ';
+        let typeIcon = '';
+        if (type === 'лекция') typeIcon = '📘';
+        else if (type === 'ПЗ') typeIcon = '📗';
+        else if (type === 'лабораторная работа') typeIcon = '📙';
+        else if (type === 'экзамен') typeIcon = '📖';
+        else if (type === 'зачет') typeIcon = '📝';
+        else if (type === 'практика') typeIcon = '🛠';
         html += `<div class="mobile-card">
                     <div class="card-header">
                         <span>${day}</span>
@@ -243,7 +253,7 @@ async function refresh(force = false) {
 
 // ===== ОБРАБОТЧИКИ =====
 document.addEventListener('DOMContentLoaded', () => {
-    // Кнопки выбора типа
+    // Фильтр по типу (новый блок)
     document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
