@@ -1,0 +1,245 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+body {
+    background: #f5f7fa;
+    color: #1a1a2e;
+    padding: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+/* Шапка */
+header {
+    text-align: center;
+    padding: 20px 0 15px;
+    border-bottom: 3px solid #0a3d62;
+    margin-bottom: 20px;
+}
+header h1 {
+    font-size: 2.5rem;
+    color: #0a3d62;
+    letter-spacing: 1px;
+}
+.subtitle {
+    font-size: 1.1rem;
+    color: #555;
+    margin-top: 5px;
+}
+
+/* Тип занятий */
+.type-selector {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.type-btn {
+    padding: 6px 16px;
+    background: white;
+    border: 2px solid #0a3d62;
+    border-radius: 30px;
+    font-weight: 600;
+    color: #0a3d62;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.type-btn:hover { background: #e6f0fa; }
+.type-btn.active { background: #0a3d62; color: white; }
+
+/* Факультеты */
+.faculty-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.faculty-btn {
+    padding: 10px 28px;
+    background: white;
+    border: 2px solid #0a3d62;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0a3d62;
+    cursor: pointer;
+}
+.faculty-btn:hover { background: #e6f0fa; }
+.faculty-btn.active { background: #0a3d62; color: white; }
+
+/* Управление */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+}
+#searchInput {
+    flex: 2 1 250px;
+    padding: 10px 16px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+}
+#searchInput:focus { border-color: #0a3d62; }
+#groupSelect {
+    flex: 1 1 200px;
+    padding: 10px 16px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 1rem;
+    background: white;
+}
+.week-toggle {
+    display: flex;
+    gap: 5px;
+    background: #eef2f7;
+    border-radius: 30px;
+    padding: 4px;
+}
+.week-btn {
+    padding: 7px 18px;
+    border: none;
+    background: transparent;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.week-btn.active { background: #0a3d62; color: white; }
+.week-btn:hover:not(.active) { background: #d0dae8; }
+#refreshBtn {
+    background: #0a3d62;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Таблица */
+#schedule-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    padding: 5px;
+}
+#schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    min-width: 700px;
+}
+#schedule-table th {
+    background: #0a3d62;
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+}
+#schedule-table td {
+    border: 1px solid #e0e4eb;
+    padding: 10px 6px;
+    vertical-align: middle;
+    text-align: center;
+    min-height: 60px;
+}
+.time-col {
+    font-weight: 600;
+    background: #f0f4fc;
+    color: #0a3d62;
+    white-space: nowrap;
+}
+.lesson-cell {
+    background: #fafbff;
+}
+.lesson-cell .subject { font-weight: 600; color: #0a3d62; }
+.lesson-cell .teacher { font-size: 0.8rem; color: #444; display: block; }
+.lesson-cell .room { font-size: 0.8rem; color: #666; display: block; }
+.lesson-cell .type { font-size: 0.75rem; color: #555; display: block; margin-top: 2px; }
+.empty-cell { background: #f9fafc; color: #b0b8c5; }
+
+/* Мобильные карточки */
+#mobile-list {
+    display: none;
+    padding: 10px;
+}
+.mobile-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 12px;
+    padding: 12px 16px;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: #0a3d62;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+}
+.card-body div { margin: 4px 0; }
+.type-badge {
+    font-size: 0.8rem;
+    color: #555;
+    margin-left: 8px;
+}
+
+/* Футер */
+footer {
+    margin-top: 40px;
+    border-top: 2px solid #dce3ec;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.timetable-info {
+    background: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 15px;
+}
+.timetable-info h3 { text-align: center; color: #0a3d62; margin-bottom: 10px; }
+.call-table { width: 100%; border-collapse: collapse; }
+.call-table td { padding: 5px 10px; border-bottom: 1px solid #eee; }
+.call-table td:first-child { font-weight: 600; color: #0a3d62; }
+.call-table td:last-child { text-align: right; }
+.copyright { color: #777; font-size: 0.9rem; }
+
+/* Адаптив */
+@media (max-width: 768px) {
+    header h1 { font-size: 1.8rem; }
+    .controls { flex-direction: column; align-items: stretch; }
+    #searchInput, #groupSelect { width: 100%; }
+    .week-toggle { justify-content: center; }
+    .faculty-btn { padding: 8px 18px; font-size: 0.9rem; }
+    #schedule-table { font-size: 0.8rem; min-width: 500px; }
+    #schedule-table th, #schedule-table td { padding: 6px 4px; }
+    #mobile-list { display: block !important; }
+    #schedule-table { display: none !important; }
+}
+@media (max-width: 480px) {
+    header h1 { font-size: 1.5rem; }
+    .faculty-nav { gap: 6px; }
+    .faculty-btn { padding: 6px 12px; font-size: 0.8rem; }
+    .type-btn { padding: 4px 12px; font-size: 0.8rem; }
+}

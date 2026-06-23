@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель НГГТИ</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #f0f2f5; padding: 20px; max-width: 1300px; margin: 0 auto; }
+        h1 { color: #0a3d62; border-bottom: 3px solid #0a3d62; padding-bottom: 10px; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 10px; }
+        .form-group { flex: 1 0 150px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
+        .btn { padding: 8px 20px; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #0a3d62; }
+        .btn-primary:hover { background: #1e5a7a; }
+        .btn-danger { background: #c0392b; }
+        .btn-danger:hover { background: #a93226; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #1e8449; }
+        .btn-secondary { background: #7f8c8d; }
+        .btn-secondary:hover { background: #5d6d7e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th { background: #0a3d62; color: white; padding: 8px; text-align: left; }
+        td, th { padding: 6px 8px; border: 1px solid #ddd; }
+        .actions { display: flex; gap: 5px; flex-wrap: wrap; }
+        .actions button { padding: 4px 10px; font-size: 0.75rem; }
+        #status { padding: 10px; background: #eaf2f8; border-radius: 6px; margin: 10px 0; }
+        .flex-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .count { font-weight: 600; }
+        .tab { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab button { padding: 8px 20px; border: none; background: #ddd; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .tab button.active { background: #0a3d62; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .sheet-selector { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .sheet-selector button { padding: 6px 15px; border: 1px solid #0a3d62; background: white; border-radius: 20px; cursor: pointer; }
+        .sheet-selector button.active { background: #0a3d62; color: white; }
+        .ref-table { margin-top: 10px; }
+        .ref-table td { padding: 4px 8px; }
+        .ref-form { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+        @media (max-width: 600px) { .form-row { flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+<h1>🧑‍💻 Админ-панель НГГТИ</h1>
+
+<!-- Настройки API -->
+<div class="container">
+    <div class="flex-row">
+        <div class="form-group" style="flex: 3;">
+            <label>URL веб-приложения GAS:</label>
+            <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;">
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>Секретный ключ:</label>
+            <input type="password" id="apiSecret" placeholder="mySecretKey123">
+        </div>
+        <button class="btn btn-primary" id="connectBtn">Подключиться</button>
+    </div>
+    <div id="connectionStatus" style="margin-top:8px; color:#555;"></div>
+</div>
+
+<!-- Период действия -->
+<div class="container">
+    <h3>📅 Период действия расписания</h3>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Тип расписания</label>
+            <select id="settingsTypeSelect">
+                <option value="Расписание">Основное</option>
+                <option value="Практика">Практика</option>
+                <option value="Зачеты">Зачеты</option>
+                <option value="Экзамены">Экзамены</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Дата начала (ДД.ММ.ГГГГ)</label>
+            <input type="text" id="startDateInput" placeholder="01.09.2025">
+        </div>
+        <div class="form-group">
+            <label>Дата окончания (ДД.ММ.ГГГГ)</label>
+            <input type="text" id="endDateInput" placeholder="31.06.2026">
+        </div>
+        <div class="form-group" style="flex: 0 0 auto;">
+            <button class="btn btn-success" id="saveSettingsBtn">💾 Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Выбор листа -->
+<div class="container">
+    <div class="sheet-selector">
+        <button class="sheet-btn active" data-sheet="Расписание">📚 Основное</button>
+        <button class="sheet-btn" data-sheet="Практика">🛠 Практика</button>
+        <button class="sheet-btn" data-sheet="Зачеты">📝 Зачеты</button>
+        <button class="sheet-btn" data-sheet="Экзамены">📖 Экзамены</button>
+    </div>
+</div>
+
+<!-- Вкладки -->
+<div class="tab">
+    <button class="tab-btn active" data-tab="manual">➕ Ручное добавление</button>
+    <button class="tab-btn" data-tab="refs">📋 Справочники</button>
+</div>
+
+<!-- ===== ВКЛАДКА: РУЧНОЕ ДОБАВЛЕНИЕ ===== -->
+<div id="tab-manual" class="tab-content active">
+    <div class="container">
+        <h3>Добавление новой пары</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Факультет</label>
+                <select id="facultySelect">
+                    <option value="ФЭФ">ФЭФ</option>
+                    <option value="ГФ">ГФ</option>
+                    <option value="ФТСТ">ФТСТ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Группа</label>
+                <input list="groupsList" id="groupInput" placeholder="ЭК-41">
+                <datalist id="groupsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Преподаватель</label>
+                <input list="teachersList" id="teacherInput" placeholder="Иванов И.И.">
+                <datalist id="teachersList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Дисциплина</label>
+                <input list="subjectsList" id="subjectInput" placeholder="Экономика">
+                <datalist id="subjectsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Аудитория</label>
+                <input list="roomsList" id="roomInput" placeholder="205">
+                <datalist id="roomsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Здание</label>
+                <input list="buildingsList" id="buildingInput" placeholder="III">
+                <datalist id="buildingsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>День</label>
+                <select id="daySelect">
+                    <option value="ПН">ПН</option><option value="ВТ">ВТ</option>
+                    <option value="СР">СР</option><option value="ЧТ">ЧТ</option>
+                    <option value="ПТ">ПТ</option><option value="СБ">СБ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Номер пары</label>
+                <select id="lessonSelect">
+                    <option>1</option><option>2</option><option>3</option><option>4</option>
+                    <option>5</option><option>6</option><option>7</option><option>8</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Неделя</label>
+                <select id="weekSelect">
+                    <option value="1">1-я</option>
+                    <option value="2">2-я</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Вид занятия</label>
+                <select id="typeSelect">
+                    <option value="лекция">📘 Лекция</option>
+                    <option value="практика">📗 Практика</option>
+                    <option value="лабораторная">📙 Лабораторная</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 0 0 auto;">
+                <button class="btn btn-success" id="addBtn">➕ Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ВКЛАДКА: СПРАВОЧНИКИ ===== -->
+<div id="tab-refs" class="tab-content">
+    <div class="container">
+        <h3>📋 Справочники</h3>
+        <div class="ref-block" data-ref="groups">
+            <h4>Группы</h4>
+            <div class="ref-form">
+                <input type="text" id="newGroup" placeholder="Новая группа">
+                <button class="btn btn-success" onclick="addRef('groups', 'newGroup')">➕</button>
+            </div>
+            <table class="ref-table"><tbody id="groupsTable"></tbody></table>
+        </div>
+        <div class="ref-block" data-ref="teachers">
+            <h4>Преподаватели</h4>
+            <div class="ref-form">
+                <input type="text" id="newTeacher" placeholder="Новый преподаватель">
+                <button class="btn btn-success" onclick="addRef('teachers', 'newTeacher')">➕</button>
+            </div>
+            <table class="ref-table"><tbody id="teachersTable"></tbody></table>
+        </div>
+        <div class="ref-block" data-ref="subjects">
+            <h4>Дисциплины</h4>
+            <div class="ref-form">
+                <input type="text" id="newSubject" placeholder="Новая дисциплина">
+                <button class="btn btn-success" onclick="addRef('subjects', 'newSubject')">➕</button>
+            </div>
+            <table class="ref-table"><tbody id="subjectsTable"></tbody></table>
+        </div>
+        <div class="ref-block" data-ref="rooms">
+            <h4>Аудитории (номер, здание)</h4>
+            <div class="ref-form">
+                <input type="text" id="newRoom" placeholder="Номер аудитории">
+                <input type="text" id="newBuilding" placeholder="Здание (римская цифра)">
+                <button class="btn btn-success" onclick="addRoomRef()">➕</button>
+            </div>
+            <table class="ref-table"><tbody id="roomsTable"></tbody></table>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ТАБЛИЦА ЗАПИСЕЙ ===== -->
+<div class="container">
+    <div class="flex-row">
+        <h3 style="margin:0;">Записи в листе <span id="currentSheetName">Расписание</span></h3>
+        <span class="count" id="recordCount">0</span>
+        <button class="btn btn-danger" id="clearSheetBtn">🗑 Очистить лист</button>
+        <button class="btn btn-secondary" id="refreshBtn">🔄 Обновить</button>
+    </div>
+    <div id="status">Данные загружены с сервера.</div>
+    <div style="overflow-x:auto;">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Факультет</th><th>Группа</th><th>Преподаватель</th>
+                    <th>Дисциплина</th><th>Аудитория</th><th>Здание</th>
+                    <th>День</th><th>Пара</th><th>Неделя</th><th>Вид</th><th>Действия</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- строки -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+let apiUrl = '';
+let apiSecret = '';
+let currentSheet = 'Расписание';
+let records = [];
+let refs = { groups: [], teachers: [], subjects: [], rooms: [] };
+const COLUMNS = ['Факультет','Группа','Преподаватель','Дисциплина','Аудитория','Здание','День_недели','Номер_пары','Неделя','Вид_занятия'];
+
+// ===== ЭЛЕМЕНТЫ =====
+const apiUrlInput = document.getElementById('apiUrl');
+const apiSecretInput = document.getElementById('apiSecret');
+const connectBtn = document.getElementById('connectBtn');
+const connectionStatus = document.getElementById('connectionStatus');
+const startDateInput = document.getElementById('startDateInput');
+const endDateInput = document.getElementById('endDateInput');
+const settingsTypeSelect = document.getElementById('settingsTypeSelect');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const sheetBtns = document.querySelectorAll('.sheet-btn');
+const currentSheetNameSpan = document.getElementById('currentSheetName');
+const statusDiv = document.getElementById('status');
+const tableBody = document.getElementById('tableBody');
+const recordCount = document.getElementById('recordCount');
+const refreshBtn = document.getElementById('refreshBtn');
+const clearSheetBtn = document.getElementById('clearSheetBtn');
+
+// ===== ФУНКЦИИ РАБОТЫ С API =====
+async function callApi(action, data = {}) {
+    if (!apiUrl) {
+        alert('Сначала подключитесь к API.');
+        return null;
+    }
+    const payload = new URLSearchParams();
+    payload.append('action', action);
+    payload.append('sheet', currentSheet);
+    payload.append('secret', apiSecret);
+    if (data.records) payload.append('records', JSON.stringify(data.records));
+    if (data.rowIndex) payload.append('rowIndex', data.rowIndex);
+    if (data.settings) payload.append('settings', JSON.stringify(data.settings));
+    if (data.startDate) payload.append('startDate', data.startDate);
+    if (data.endDate) payload.append('endDate', data.endDate);
+    if (data.ref) payload.append('ref', JSON.stringify(data.ref));
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: payload.toString()
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Неизвестная ошибка');
+        return result.result;
+    } catch (err) {
+        alert('Ошибка при вызове API: ' + err.message);
+        return null;
+    }
+}
+
+// ===== ЗАГРУЗКА ДАННЫХ =====
+async function loadData() {
+    if (!apiUrl) return;
+    const url = `${apiUrl}?action=getSchedule&sheet=${encodeURIComponent(currentSheet)}`;
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Ошибка загрузки');
+        const data = await resp.json();
+        if (!Array.isArray(data)) {
+            console.error('Получен не массив:', data);
+            if (data && data.error) {
+                throw new Error(data.error);
+            }
+            throw new Error('Сервер вернул не массив данных. Проверьте лист "' + currentSheet + '".');
+        }
+        records = data;
+        renderTable();
+        updateCount();
+        statusDiv.textContent = `Загружено ${records.length} записей.`;
+    } catch (err) {
+        alert('Не удалось загрузить данные: ' + err.message);
+        records = [];
+        renderTable();
+        updateCount();
+        statusDiv.textContent = 'Ошибка загрузки';
+    }
+}
+
+async function loadRefs() {
+    if (!apiUrl) return;
+    const url = `${apiUrl}?action=getRefs`;
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Ошибка загрузки справочников');
+        const data = await resp.json();
+        refs = data;
+        updateDatalists();
+        renderRefTables();
+    } catch (err) {
+        console.warn('Не удалось загрузить справочники:', err);
+    }
+}
+
+// ===== ОТРИСОВКА ТАБЛИЦЫ =====
+function renderTable() {
+    if (!Array.isArray(records) || records.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:#999;">Нет записей</td></tr>`;
+        return;
+    }
+    let html = '';
+    records.forEach((rec, index) => {
+        const rowIndex = index + 2;
+        html += `<tr>
+            <td>${rowIndex}</td>
+            <td>${rec['Факультет'] || ''}</td>
+            <td>${rec['Группа'] || ''}</td>
+            <td>${rec['Преподаватель'] || ''}</td>
+            <td>${rec['Дисциплина'] || ''}</td>
+            <td>${rec['Аудитория'] || ''}</td>
+            <td>${rec['Здание'] || ''}</td>
+            <td>${rec['День_недели'] || ''}</td>
+            <td>${rec['Номер_пары'] || ''}</td>
+            <td>${rec['Неделя'] || ''}</td>
+            <td>${rec['Вид_занятия'] || ''}</td>
+            <td class="actions">
+                <button class="btn btn-danger" style="padding:2px 8px;" data-rowindex="${rowIndex}">✖</button>
+            </td>
+        </tr>`;
+    });
+    tableBody.innerHTML = html;
+    document.querySelectorAll('[data-rowindex]').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const rowIndex = parseInt(this.dataset.rowindex, 10);
+            if (confirm(`Удалить запись в строке ${rowIndex}?`)) {
+                const result = await callApi('delete', { rowIndex: rowIndex });
+                if (result) {
+                    statusDiv.textContent = 'Запись удалена.';
+                    loadData();
+                }
+            }
+        });
+    });
+}
+
+function updateCount() {
+    recordCount.textContent = records.length;
+}
+
+// ===== ДАТАЛИСТЫ =====
+function updateDatalists() {
+    const groupsList = document.getElementById('groupsList');
+    const teachersList = document.getElementById('teachersList');
+    const subjectsList = document.getElementById('subjectsList');
+    const roomsList = document.getElementById('roomsList');
+    const buildingsList = document.getElementById('buildingsList');
+
+    groupsList.innerHTML = refs.groups.map(g => `<option value="${g}">`).join('');
+    teachersList.innerHTML = refs.teachers.map(t => `<option value="${t}">`).join('');
+    subjectsList.innerHTML = refs.subjects.map(s => `<option value="${s}">`).join('');
+    roomsList.innerHTML = refs.rooms.map(r => `<option value="${r.номер}">`).join('');
+    const buildings = [...new Set(refs.rooms.map(r => r.здание).filter(Boolean))];
+    buildingsList.innerHTML = buildings.map(b => `<option value="${b}">`).join('');
+}
+
+// ===== ОТРИСОВКА СПРАВОЧНИКОВ =====
+function renderRefTables() {
+    document.getElementById('groupsTable').innerHTML = refs.groups.map(g => `<tr><td>${g}</td></tr>`).join('');
+    document.getElementById('teachersTable').innerHTML = refs.teachers.map(t => `<tr><td>${t}</td></tr>`).join('');
+    document.getElementById('subjectsTable').innerHTML = refs.subjects.map(s => `<tr><td>${s}</td></tr>`).join('');
+    document.getElementById('roomsTable').innerHTML = refs.rooms.map(r => `<tr><td>${r.номер}</td><td>${r.здание}</td></tr>`).join('');
+}
+
+// ===== ДОБАВЛЕНИЕ В СПРАВОЧНИК =====
+window.addRef = async function(refType, inputId) {
+    const input = document.getElementById(inputId);
+    const value = input.value.trim();
+    if (!value) return;
+    const result = await callApi('addRef', { ref: { type: refType, value: value } });
+    if (result) {
+        input.value = '';
+        loadRefs();
+    }
+};
+
+window.addRoomRef = async function() {
+    const room = document.getElementById('newRoom').value.trim();
+    const building = document.getElementById('newBuilding').value.trim();
+    if (!room) return;
+    const result = await callApi('addRef', { ref: { type: 'rooms', value: { номер: room, здание: building } } });
+    if (result) {
+        document.getElementById('newRoom').value = '';
+        document.getElementById('newBuilding').value = '';
+        loadRefs();
+    }
+};
+
+// ===== ПОДКЛЮЧЕНИЕ =====
+connectBtn.addEventListener('click', function() {
+    apiUrl = apiUrlInput.value.trim();
+    apiSecret = apiSecretInput.value.trim();
+    if (!apiUrl || !apiSecret) {
+        alert('Введите URL и секретный ключ.');
+        return;
+    }
+    localStorage.setItem('apiUrl', apiUrl);
+    localStorage.setItem('apiSecret', apiSecret);
+    connectionStatus.textContent = 'Подключено. Загружаем данные...';
+    loadData().then(() => {
+        loadRefs();
+        connectionStatus.textContent = '✅ Подключено успешно.';
+    });
+});
+
+// ===== СОХРАНЕНИЕ НАСТРОЕК =====
+saveSettingsBtn.addEventListener('click', async function() {
+    const type = settingsTypeSelect.value;
+    const start = startDateInput.value.trim();
+    const end = endDateInput.value.trim();
+    if (!start || !end) {
+        alert('Введите обе даты.');
+        return;
+    }
+    const regex = /^\d{2}\.\d{2}\.\d{4}$/;
+    if (!regex.test(start) || !regex.test(end)) {
+        alert('Даты должны быть в формате ДД.ММ.ГГГГ');
+        return;
+    }
+    const result = await callApi('updateSettings', { settings: { type, start, end } });
+    if (result) {
+        alert('Настройки сохранены.');
+    }
+});
+
+// ===== ВЫБОР ЛИСТА =====
+sheetBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        sheetBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentSheet = this.dataset.sheet;
+        currentSheetNameSpan.textContent = currentSheet;
+        loadData();
+    });
+});
+
+// ===== ОБНОВЛЕНИЕ =====
+refreshBtn.addEventListener('click', loadData);
+
+// ===== ОЧИСТКА =====
+clearSheetBtn.addEventListener('click', async function() {
+    if (!confirm(`Очистить все данные в листе "${currentSheet}"?`)) return;
+    const result = await callApi('clear');
+    if (result) {
+        statusDiv.textContent = 'Лист очищен.';
+        loadData();
+    }
+});
+
+// ===== РУЧНОЕ ДОБАВЛЕНИЕ =====
+document.getElementById('addBtn').addEventListener('click', async function() {
+    const faculty = document.getElementById('facultySelect').value;
+    const group = document.getElementById('groupInput').value.trim();
+    const teacher = document.getElementById('teacherInput').value.trim();
+    const subject = document.getElementById('subjectInput').value.trim();
+    const room = document.getElementById('roomInput').value.trim();
+    const building = document.getElementById('buildingInput').value.trim();
+    const day = document.getElementById('daySelect').value;
+    const lesson = document.getElementById('lessonSelect').value;
+    const week = document.getElementById('weekSelect').value;
+    const type = document.getElementById('typeSelect').value;
+
+    if (!group || !teacher || !subject) {
+        alert('Заполните группу, преподавателя и дисциплину.');
+        return;
+    }
+    const newRecord = {
+        'Факультет': faculty,
+        'Группа': group,
+        'Преподаватель': teacher,
+        'Дисциплина': subject,
+        'Аудитория': room,
+        'Здание': building,
+        'День_недели': day,
+        'Номер_пары': lesson,
+        'Неделя': week,
+        'Вид_занятия': type
+    };
+    const result = await callApi('add', { records: [newRecord] });
+    if (result) {
+        statusDiv.textContent = `Добавлена запись.`;
+        document.getElementById('groupInput').value = '';
+        document.getElementById('teacherInput').value = '';
+        document.getElementById('subjectInput').value = '';
+        document.getElementById('roomInput').value = '';
+        document.getElementById('buildingInput').value = '';
+        loadData();
+        loadRefs();
+    }
+});
+
+// ===== ВКЛАДКИ =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const tabId = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        if (tabId === 'refs') loadRefs();
+    });
+});
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+if (localStorage.getItem('apiUrl')) {
+    apiUrlInput.value = localStorage.getItem('apiUrl');
+    apiSecretInput.value = localStorage.getItem('apiSecret');
+    connectBtn.click();
+}
+</script>
+</body>
+</html>

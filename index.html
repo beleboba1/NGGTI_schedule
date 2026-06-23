@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>НГГТИ расписание</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>НГГТИ расписание</h1>
+        <p class="subtitle">на 2025 - 2026 учебный год</p>
+    </header>
+
+    <!-- Выбор типа расписания (листа) -->
+    <div class="type-selector">
+        <button class="type-btn active" data-sheet="Расписание">📚 Основное</button>
+        <button class="type-btn" data-sheet="Практика">🛠 Практика</button>
+        <button class="type-btn" data-sheet="Зачеты">📝 Зачеты</button>
+        <button class="type-btn" data-sheet="Экзамены">📖 Экзамены</button>
+    </div>
+
+    <nav class="faculty-nav">
+        <button class="faculty-btn active" data-faculty="all">Все факультеты</button>
+        <button class="faculty-btn" data-faculty="ФЭФ">ФЭФ</button>
+        <button class="faculty-btn" data-faculty="ГФ">ГФ</button>
+        <button class="faculty-btn" data-faculty="ФТСТ">ФТСТ</button>
+    </nav>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Поиск по группе или преподавателю...">
+        <select id="groupSelect">
+            <option value="">Выберите группу</option>
+        </select>
+        <div class="week-toggle">
+            <button class="week-btn active" data-week="1">1-я неделя</button>
+            <button class="week-btn" data-week="2">2-я неделя</button>
+        </div>
+        <button id="refreshBtn" class="btn-secondary">🔄</button>
+    </div>
+
+    <div id="loading" style="display:none; text-align:center; padding:20px;">Загрузка...</div>
+
+    <div id="schedule-container">
+        <table id="schedule-table">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>ПН</th>
+                    <th>ВТ</th>
+                    <th>СР</th>
+                    <th>ЧТ</th>
+                    <th>ПТ</th>
+                    <th>СБ</th>
+                </tr>
+            </thead>
+            <tbody id="schedule-body">
+                <!-- строки -->
+            </tbody>
+        </table>
+        <div id="mobile-list" style="display:none;"></div>
+    </div>
+
+    <div id="no-data" style="display:none; text-align:center; padding: 40px;">
+        <p>Нет данных для выбранного фильтра.</p>
+    </div>
+
+    <footer>
+        <div class="timetable-info">
+            <h3>Расписание звонков</h3>
+            <table class="call-table">
+                <tr><td>1 пара</td><td>08:30 – 10:00</td></tr>
+                <tr><td>2 пара</td><td>10:10 – 11:40</td></tr>
+                <tr><td>3 пара</td><td>11:50 – 13:20</td></tr>
+                <tr><td>4 пара</td><td>13:30 – 15:00</td></tr>
+                <tr><td>5 пара</td><td>15:10 – 16:40</td></tr>
+                <tr><td>6 пара</td><td>16:50 – 18:20</td></tr>
+                <tr><td>7 пара</td><td>18:30 – 20:00</td></tr>
+                <tr><td>8 пара</td><td>20:10 – 21:40</td></tr>
+            </table>
+        </div>
+        <p class="copyright">© 2025 НГГТИ · Данные обновляются автоматически</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
