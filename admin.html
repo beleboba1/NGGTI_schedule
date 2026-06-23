@@ -30,9 +30,13 @@
         #status { padding: 10px; background: #eaf2f8; border-radius: 6px; margin: 10px 0; }
         .flex-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         .count { font-weight: 600; }
-        .sheet-selector { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .sheet-selector button { padding: 6px 15px; border: 1px solid #0a3d62; background: white; border-radius: 20px; cursor: pointer; }
-        .sheet-selector button.active { background: #0a3d62; color: white; }
+        .tab { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab button { padding: 8px 20px; border: none; background: #ddd; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .tab button.active { background: #0a3d62; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .ref-table { margin-top: 10px; width: 100%; }
+        .ref-table td { padding: 4px 8px; }
         @media (max-width: 600px) { .form-row { flex-direction: column; } }
     </style>
 </head>
@@ -56,95 +60,125 @@
     <div id="connectionStatus" style="margin-top:8px; color:#555;"></div>
 </div>
 
-<!-- Выбор листа -->
-<div class="container">
-    <div class="sheet-selector">
-        <button class="sheet-btn active" data-sheet="Расписание">📚 Основное</button>
-        <button class="sheet-btn" data-sheet="Практика">🛠 Практика</button>
-        <button class="sheet-btn" data-sheet="Зачеты">📝 Зачеты</button>
-        <button class="sheet-btn" data-sheet="Экзамены">📖 Экзамены</button>
+<!-- Вкладки -->
+<div class="tab">
+    <button class="tab-btn active" data-tab="manual">➕ Ручное добавление</button>
+    <button class="tab-btn" data-tab="refs">📋 Справочники</button>
+</div>
+
+<!-- ===== ВКЛАДКА: РУЧНОЕ ДОБАВЛЕНИЕ ===== -->
+<div id="tab-manual" class="tab-content active">
+    <div class="container">
+        <h3>Добавление новой пары</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Факультет</label>
+                <select id="facultySelect">
+                    <option value="ФЭФ">ФЭФ</option>
+                    <option value="ГФ">ГФ</option>
+                    <option value="ФТСТ">ФТСТ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Группа</label>
+                <input list="groupsList" id="groupInput" placeholder="ЭК-41">
+                <datalist id="groupsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Преподаватель</label>
+                <input list="teachersList" id="teacherInput" placeholder="Иванов И.И.">
+                <datalist id="teachersList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Дисциплина</label>
+                <input list="subjectsList" id="subjectInput" placeholder="Экономика">
+                <datalist id="subjectsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Аудитория</label>
+                <input list="roomsList" id="roomInput" placeholder="205">
+                <datalist id="roomsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Здание</label>
+                <input list="buildingsList" id="buildingInput" placeholder="III">
+                <datalist id="buildingsList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>День</label>
+                <select id="daySelect">
+                    <option value="ПН">ПН</option><option value="ВТ">ВТ</option>
+                    <option value="СР">СР</option><option value="ЧТ">ЧТ</option>
+                    <option value="ПТ">ПТ</option><option value="СБ">СБ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Номер пары</label>
+                <select id="lessonSelect">
+                    <option>1</option><option>2</option><option>3</option><option>4</option>
+                    <option>5</option><option>6</option><option>7</option><option>8</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Неделя</label>
+                <select id="weekSelect">
+                    <option value="1">1-я</option>
+                    <option value="2">2-я</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Вид занятия</label>
+                <select id="typeSelect">
+                    <option value="лекция">📘 Лекция</option>
+                    <option value="практика">📗 Практика</option>
+                    <option value="лабораторная">📙 Лабораторная</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Тип расписания</label>
+                <select id="kindSelect">
+                    <option value="Основное">📚 Основное</option>
+                    <option value="Практика">🛠 Практика</option>
+                    <option value="Зачет">📝 Зачет</option>
+                    <option value="Экзамен">📖 Экзамен</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 0 0 auto;">
+                <button class="btn btn-success" id="addBtn">➕ Добавить</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Форма добавления -->
-<div class="container">
-    <h3>➕ Добавление новой пары</h3>
-    <div class="form-row">
-        <div class="form-group">
-            <label>Факультет</label>
-            <select id="facultySelect">
-                <option value="ФЭФ">ФЭФ</option>
-                <option value="ГФ">ГФ</option>
-                <option value="ФТСТ">ФТСТ</option>
-            </select>
+<!-- ===== ВКЛАДКА: СПРАВОЧНИКИ ===== -->
+<div id="tab-refs" class="tab-content">
+    <div class="container">
+        <h3>📋 Справочники (только просмотр)</h3>
+        <div>
+            <h4>Группы</h4>
+            <table class="ref-table"><tbody id="groupsTable"></tbody></table>
         </div>
-        <div class="form-group">
-            <label>Группа</label>
-            <input list="groupsList" id="groupInput" placeholder="ЭК-41">
-            <datalist id="groupsList"></datalist>
+        <div>
+            <h4>Преподаватели</h4>
+            <table class="ref-table"><tbody id="teachersTable"></tbody></table>
         </div>
-        <div class="form-group">
-            <label>Преподаватель</label>
-            <input list="teachersList" id="teacherInput" placeholder="Иванов И.И.">
-            <datalist id="teachersList"></datalist>
+        <div>
+            <h4>Дисциплины</h4>
+            <table class="ref-table"><tbody id="subjectsTable"></tbody></table>
         </div>
-        <div class="form-group">
-            <label>Дисциплина</label>
-            <input list="subjectsList" id="subjectInput" placeholder="Экономика">
-            <datalist id="subjectsList"></datalist>
-        </div>
-        <div class="form-group">
-            <label>Аудитория</label>
-            <input list="roomsList" id="roomInput" placeholder="205">
-            <datalist id="roomsList"></datalist>
-        </div>
-        <div class="form-group">
-            <label>Здание</label>
-            <input list="buildingsList" id="buildingInput" placeholder="III">
-            <datalist id="buildingsList"></datalist>
-        </div>
-        <div class="form-group">
-            <label>День</label>
-            <select id="daySelect">
-                <option value="ПН">ПН</option><option value="ВТ">ВТ</option>
-                <option value="СР">СР</option><option value="ЧТ">ЧТ</option>
-                <option value="ПТ">ПТ</option><option value="СБ">СБ</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Номер пары</label>
-            <select id="lessonSelect">
-                <option>1</option><option>2</option><option>3</option><option>4</option>
-                <option>5</option><option>6</option><option>7</option><option>8</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Неделя</label>
-            <select id="weekSelect">
-                <option value="1">1-я</option>
-                <option value="2">2-я</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Вид занятия</label>
-            <select id="typeSelect">
-                <option value="лекция">📘 Лекция</option>
-                <option value="практика">📗 Практика</option>
-                <option value="лабораторная">📙 Лабораторная</option>
-            </select>
-        </div>
-        <div class="form-group" style="flex: 0 0 auto;">
-            <button class="btn btn-success" id="addBtn">➕ Добавить</button>
+        <div>
+            <h4>Аудитории (номер, здание)</h4>
+            <table class="ref-table"><tbody id="roomsTable"></tbody></table>
         </div>
     </div>
 </div>
 
-<!-- Таблица записей -->
+<!-- ===== ТАБЛИЦА ЗАПИСЕЙ ===== -->
 <div class="container">
     <div class="flex-row">
-        <h3 style="margin:0;">Записи в листе <span id="currentSheetName">Расписание</span></h3>
+        <h3 style="margin:0;">Все записи</h3>
         <span class="count" id="recordCount">0</span>
-        <button class="btn btn-danger" id="clearSheetBtn">🗑 Очистить лист</button>
+        <button class="btn btn-danger" id="clearSheetBtn">🗑 Очистить все</button>
         <button class="btn btn-secondary" id="refreshBtn">🔄 Обновить</button>
     </div>
     <div id="status">Данные загружены с сервера.</div>
@@ -155,7 +189,7 @@
                     <th>#</th>
                     <th>Факультет</th><th>Группа</th><th>Преподаватель</th>
                     <th>Дисциплина</th><th>Аудитория</th><th>Здание</th>
-                    <th>День</th><th>Пара</th><th>Неделя</th><th>Вид</th><th>Действия</th>
+                    <th>День</th><th>Пара</th><th>Неделя</th><th>Вид</th><th>Тип</th><th>Действия</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -169,7 +203,6 @@
 // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
 let apiUrl = '';
 let apiSecret = '';
-let currentSheet = 'Расписание';
 let records = [];
 let refs = { groups: [], teachers: [], subjects: [], rooms: [] };
 
@@ -178,8 +211,6 @@ const apiUrlInput = document.getElementById('apiUrl');
 const apiSecretInput = document.getElementById('apiSecret');
 const connectBtn = document.getElementById('connectBtn');
 const connectionStatus = document.getElementById('connectionStatus');
-const sheetBtns = document.querySelectorAll('.sheet-btn');
-const currentSheetNameSpan = document.getElementById('currentSheetName');
 const statusDiv = document.getElementById('status');
 const tableBody = document.getElementById('tableBody');
 const recordCount = document.getElementById('recordCount');
@@ -194,7 +225,6 @@ async function callApi(action, data = {}) {
     }
     const payload = new URLSearchParams();
     payload.append('action', action);
-    payload.append('sheet', currentSheet);
     payload.append('secret', apiSecret);
     if (data.records) payload.append('records', JSON.stringify(data.records));
     if (data.rowIndex) payload.append('rowIndex', data.rowIndex);
@@ -218,14 +248,14 @@ async function callApi(action, data = {}) {
 // ===== ЗАГРУЗКА ДАННЫХ =====
 async function loadData() {
     if (!apiUrl) return;
-    const url = `${apiUrl}?action=getSchedule&sheet=${encodeURIComponent(currentSheet)}`;
+    const url = `${apiUrl}?action=getSchedule`;
     try {
         const resp = await fetch(url);
         if (!resp.ok) throw new Error('Ошибка загрузки');
         const data = await resp.json();
         if (!Array.isArray(data)) {
             console.error('Получен не массив:', data);
-            throw new Error('Сервер вернул не массив данных. Проверьте лист "' + currentSheet + '".');
+            throw new Error('Сервер вернул не массив данных.');
         }
         records = data;
         renderTable();
@@ -249,6 +279,7 @@ async function loadRefs() {
         const data = await resp.json();
         refs = data;
         updateDatalists();
+        renderRefTables();
     } catch (err) {
         console.warn('Не удалось загрузить справочники:', err);
     }
@@ -257,7 +288,7 @@ async function loadRefs() {
 // ===== ОТРИСОВКА ТАБЛИЦЫ =====
 function renderTable() {
     if (!Array.isArray(records) || records.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:#999;">Нет записей</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:#999;">Нет записей</td></tr>`;
         return;
     }
     let html = '';
@@ -275,6 +306,7 @@ function renderTable() {
             <td>${rec['Номер_пары'] || ''}</td>
             <td>${rec['Неделя'] || ''}</td>
             <td>${rec['Вид_занятия'] || ''}</td>
+            <td>${rec['Тип'] || ''}</td>
             <td class="actions">
                 <button class="btn btn-danger" style="padding:2px 8px;" data-rowindex="${rowIndex}">✖</button>
             </td>
@@ -315,6 +347,14 @@ function updateDatalists() {
     buildingsList.innerHTML = buildings.map(b => `<option value="${b}">`).join('');
 }
 
+// ===== ОТРИСОВКА СПРАВОЧНИКОВ =====
+function renderRefTables() {
+    document.getElementById('groupsTable').innerHTML = refs.groups.map(g => `<tr><td>${g}</td></tr>`).join('');
+    document.getElementById('teachersTable').innerHTML = refs.teachers.map(t => `<tr><td>${t}</td></tr>`).join('');
+    document.getElementById('subjectsTable').innerHTML = refs.subjects.map(s => `<tr><td>${s}</td></tr>`).join('');
+    document.getElementById('roomsTable').innerHTML = refs.rooms.map(r => `<tr><td>${r.номер}</td><td>${r.здание}</td></tr>`).join('');
+}
+
 // ===== ПОДКЛЮЧЕНИЕ =====
 connectBtn.addEventListener('click', function() {
     apiUrl = apiUrlInput.value.trim();
@@ -332,26 +372,15 @@ connectBtn.addEventListener('click', function() {
     });
 });
 
-// ===== ВЫБОР ЛИСТА =====
-sheetBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-        sheetBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentSheet = this.dataset.sheet;
-        currentSheetNameSpan.textContent = currentSheet;
-        loadData();
-    });
-});
-
 // ===== ОБНОВЛЕНИЕ =====
 refreshBtn.addEventListener('click', loadData);
 
 // ===== ОЧИСТКА =====
 clearSheetBtn.addEventListener('click', async function() {
-    if (!confirm(`Очистить все данные в листе "${currentSheet}"?`)) return;
+    if (!confirm(`Очистить все данные?`)) return;
     const result = await callApi('clear');
     if (result) {
-        statusDiv.textContent = 'Лист очищен.';
+        statusDiv.textContent = 'Все данные очищены.';
         loadData();
     }
 });
@@ -368,6 +397,7 @@ document.getElementById('addBtn').addEventListener('click', async function() {
     const lesson = document.getElementById('lessonSelect').value;
     const week = document.getElementById('weekSelect').value;
     const type = document.getElementById('typeSelect').value;
+    const kind = document.getElementById('kindSelect').value;
 
     if (!group || !teacher || !subject) {
         alert('Заполните группу, преподавателя и дисциплину.');
@@ -383,7 +413,8 @@ document.getElementById('addBtn').addEventListener('click', async function() {
         'День_недели': day,
         'Номер_пары': lesson,
         'Неделя': week,
-        'Вид_занятия': type
+        'Вид_занятия': type,
+        'Тип': kind
     };
     const result = await callApi('add', { records: [newRecord] });
     if (result) {
@@ -396,6 +427,18 @@ document.getElementById('addBtn').addEventListener('click', async function() {
         loadData();
         loadRefs();
     }
+});
+
+// ===== ВКЛАДКИ =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const tabId = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        if (tabId === 'refs') loadRefs();
+    });
 });
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====

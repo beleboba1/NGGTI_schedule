@@ -1,5 +1,5 @@
 // ===== НАСТРОЙКА =====
-const API_URL = 'https://script.google.com/macros/s/AKfycby4vsvWpkBZw5IqmiApAARdXJHxOpVDKO9lBqGHHxry76VTzDqJAq-YTPN5_-bqCIzK5Q/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbylX6rL-lLfwwH7cd7XPxRXg7apjyMW2TjqIRwqgJcZ_IEDwBPlC-OU5ygrJKV3Hg2pqA/exec';
 const CACHE_KEY = 'scheduleCache';
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -8,14 +8,14 @@ let facultyFilter = 'all';
 let searchQuery = '';
 let selectedGroup = '';
 let currentWeek = 1;
-let currentSheet = 'Расписание';
+let currentType = 'Все'; // 'Все', 'Основное', 'Практика', 'Зачет', 'Экзамен'
 
 const DAYS = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
 const LESSON_TIMES = ['08:30', '10:10', '11:50', '13:30', '15:10', '16:50', '18:30', '20:10'];
 
 // ===== КЕШИРОВАНИЕ =====
-function getCachedData(sheet) {
-    const cached = localStorage.getItem(CACHE_KEY + '_' + sheet);
+function getCachedData() {
+    const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
         try {
             const { timestamp, data } = JSON.parse(cached);
@@ -24,26 +24,26 @@ function getCachedData(sheet) {
     }
     return null;
 }
-function setCachedData(sheet, data) {
-    localStorage.setItem(CACHE_KEY + '_' + sheet, JSON.stringify({ timestamp: Date.now(), data }));
+function setCachedData(data) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
 }
 
 // ===== ЗАГРУЗКА ДАННЫХ =====
-async function loadData(sheetName = currentSheet, force = false) {
+async function loadData(force = false) {
     if (!force) {
-        const cached = getCachedData(sheetName);
+        const cached = getCachedData();
         if (cached) return cached;
     }
     try {
-        const response = await fetch(`${API_URL}?action=getSchedule&sheet=${encodeURIComponent(sheetName)}`);
+        const response = await fetch(`${API_URL}?action=getSchedule`);
         if (!response.ok) throw new Error('Ошибка загрузки');
         const data = await response.json();
         if (!Array.isArray(data)) {
             console.error('Получен не массив:', data);
-            alert('Ошибка: сервер вернул не массив данных. Проверьте лист "' + sheetName + '".');
+            alert('Ошибка: сервер вернул не массив данных.');
             return [];
         }
-        setCachedData(sheetName, data);
+        setCachedData(data);
         return data;
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
@@ -52,7 +52,7 @@ async function loadData(sheetName = currentSheet, force = false) {
     }
 }
 
-// ===== ИНДИКАТОР ЗАГРУЗКИ =====
+// ===== ИНДИКАТОР =====
 function showLoading(show) {
     const el = document.getElementById('loading');
     if (el) el.style.display = show ? 'block' : 'none';
@@ -61,9 +61,11 @@ function showLoading(show) {
 // ===== ФИЛЬТРАЦИЯ =====
 function filterData(data) {
     let filtered = data;
+    // Фильтр по факультету
     if (facultyFilter !== 'all') {
         filtered = filtered.filter(row => row['Факультет'] === facultyFilter);
     }
+    // Поиск
     if (searchQuery.trim() !== '') {
         const q = searchQuery.trim().toLowerCase();
         filtered = filtered.filter(row =>
@@ -71,14 +73,20 @@ function filterData(data) {
             row['Преподаватель'].toLowerCase().includes(q)
         );
     }
+    // Группа
     if (selectedGroup !== '') {
         filtered = filtered.filter(row => row['Группа'] === selectedGroup);
     }
+    // Неделя
     filtered = filtered.filter(row => String(row['Неделя']) === String(currentWeek));
+    // Тип (если не 'Все')
+    if (currentType !== 'Все') {
+        filtered = filtered.filter(row => row['Тип'] === currentType);
+    }
     return filtered;
 }
 
-// ===== ПОСТРОЕНИЕ ТАБЛИЦЫ (для больших экранов) =====
+// ===== ПОСТРОЕНИЕ ТАБЛИЦЫ =====
 function renderTable(filtered) {
     const tbody = document.getElementById('schedule-body');
     const noData = document.getElementById('no-data');
@@ -135,7 +143,7 @@ function renderTable(filtered) {
     tbody.innerHTML = html;
 }
 
-// ===== ПОСТРОЕНИЕ СПИСКА ДЛЯ МОБИЛЬНЫХ =====
+// ===== МОБИЛЬНАЯ ВЕРСИЯ =====
 function renderMobile(filtered) {
     const container = document.getElementById('schedule-container');
     const noData = document.getElementById('no-data');
@@ -213,10 +221,10 @@ function updateGroupOptions(data) {
     }
 }
 
-// ===== ОСНОВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ =====
+// ===== ОСНОВНАЯ ФУНКЦИЯ =====
 async function refresh(force = false) {
     showLoading(true);
-    allData = await loadData(currentSheet, force);
+    allData = await loadData(force);
     showLoading(false);
     if (allData.length === 0) return;
     updateGroupOptions(allData);
@@ -233,15 +241,15 @@ async function refresh(force = false) {
     }
 }
 
-// ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+// ===== ОБРАБОТЧИКИ =====
 document.addEventListener('DOMContentLoaded', () => {
-    // Переключатель типа занятий
-    document.querySelectorAll('.type-btn').forEach(btn => {
+    // Кнопки выбора типа
+    document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            currentSheet = this.dataset.sheet;
-            refresh(true);
+            currentType = this.dataset.type;
+            refresh();
         });
     });
 
@@ -270,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     });
 
-    // Выбор группы
+    // Группа
     document.getElementById('groupSelect').addEventListener('change', function() {
         selectedGroup = this.value;
         if (selectedGroup !== '') {
